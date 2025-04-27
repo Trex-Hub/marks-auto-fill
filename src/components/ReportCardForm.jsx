@@ -18,24 +18,24 @@ const ReportCardForm = () => {
     // Academic Grades
     grades: {
       term1: {
-        English: '',
-        ICT: '',
-        Mathematics: '',
-        Science: '',
-        SST: '',
-        French: '',
-        Hindi: '',
-        Marathi: '',
+        English: { marks: '', grade: '' },
+        ICT: { marks: '', grade: '' },
+        Mathematics: { marks: '', grade: '' },
+        Science: { marks: '', grade: '' },
+        SST: { marks: '', grade: '' },
+        French: { marks: '', grade: '' },
+        Hindi: { marks: '', grade: '' },
+        Marathi: { marks: '', grade: '' },
       },
       term2: {
-        English: '',
-        ICT: '',
-        Mathematics: '',
-        Science: '',
-        SST: '',
-        French: '',
-        Hindi: '',
-        Marathi: '',
+        English: { marks: '', grade: '' },
+        ICT: { marks: '', grade: '' },
+        Mathematics: { marks: '', grade: '' },
+        Science: { marks: '', grade: '' },
+        SST: { marks: '', grade: '' },
+        French: { marks: '', grade: '' },
+        Hindi: { marks: '', grade: '' },
+        Marathi: { marks: '', grade: '' },
       }
     },
     
@@ -88,18 +88,38 @@ const ReportCardForm = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pdfData, setPdfData] = useState(null);
+  const [isPdfReady, setIsPdfReady] = useState(false);
+  
+  // Function to calculate grade based on marks
+  const calculateGrade = (marks) => {
+    const numericMarks = parseInt(marks, 10);
+    if (isNaN(numericMarks)) return '';
+    
+    if (numericMarks >= 90) return 'A*';
+    if (numericMarks >= 80) return 'A';
+    if (numericMarks >= 70) return 'B';
+    if (numericMarks >= 60) return 'C';
+    if (numericMarks >= 50) return 'D';
+    if (numericMarks >= 40) return 'E';
+    if (numericMarks >= 30) return 'F';
+    if (numericMarks >= 20) return 'G';
+    return 'U';
+  };
   
   const handleInputChange = (section, field, value, term = null) => {
     if (section === 'personal') {
       setFormData({ ...formData, [field]: value });
     } else if (section === 'grades') {
+      // For grades, value is the marks
+      const grade = calculateGrade(value);
       setFormData({
         ...formData,
         grades: {
           ...formData.grades,
           [term]: {
             ...formData.grades[term],
-            [field]: value
+            [field]: { marks: value, grade }
           }
         }
       });
@@ -157,20 +177,13 @@ const ReportCardForm = () => {
       // Get the blob from the response
       const blob = await response.blob();
       
-      // Create a download link
+      // Store the PDF data and set flag that PDF is ready
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `${formData.studentName}_report_card.pdf`;
-      
-      // Append to the document and trigger the download
-      document.body.appendChild(a);
-      a.click();
-      
-      // Clean up
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      setPdfData({
+        url,
+        fileName: `${formData.studentName}_report_card.pdf`
+      });
+      setIsPdfReady(true);
       
     } catch (err) {
       console.error('Error generating PDF:', err);
@@ -178,6 +191,28 @@ const ReportCardForm = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  const downloadPdf = () => {
+    if (!pdfData) return;
+    
+    // Create a download link
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = pdfData.url;
+    a.download = pdfData.fileName;
+    
+    // Append to the document and trigger the download
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    window.URL.revokeObjectURL(pdfData.url);
+    document.body.removeChild(a);
+    
+    // Reset PDF data
+    setPdfData(null);
+    setIsPdfReady(false);
   };
   
   const renderStep = () => {
@@ -246,15 +281,33 @@ const ReportCardForm = () => {
               Next
             </button>
           ) : (
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 ml-auto disabled:bg-teal-300"
-            >
-              {isLoading ? 'Generating PDF...' : 'Generate Report Card'}
-            </button>
+            isPdfReady ? (
+              <button
+                type="button"
+                onClick={downloadPdf}
+                className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 ml-auto"
+              >
+                Download Report Card
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 ml-auto disabled:bg-teal-300"
+              >
+                {isLoading ? 'Generating PDF...' : 'Generate Report Card'}
+              </button>
+            )
           )}
         </div>
+        
+        {isPdfReady && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-green-700 font-medium">
+              Report card generated successfully! Click the download button to save it.
+            </p>
+          </div>
+        )}
         
         {error && (
           <p className="text-red-500 mt-4">{error}</p>

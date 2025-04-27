@@ -66,14 +66,14 @@ const CoScholasticStep = ({ formData, handleInputChange }) => {
       </div>
       
       <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200 mt-8">
-        <p className="text-sm text-yellow-800">
+        <div className="text-sm text-yellow-800">
           <strong>Understanding the Grades:</strong>
           <ul className="mt-2">
             <li><strong>A (Proficient):</strong> Student demonstrates excellent skills and creativity in visual arts.</li>
             <li><strong>B (Developing):</strong> Student shows good progress in developing artistic skills.</li>
             <li><strong>C (Emerging):</strong> Student is beginning to develop basic artistic skills.</li>
           </ul>
-        </p>
+        </div>
       </div>
     </div>
   );
