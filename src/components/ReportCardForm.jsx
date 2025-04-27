@@ -18,24 +18,24 @@ const ReportCardForm = () => {
     // Academic Grades
     grades: {
       term1: {
-        English: { marks: '', grade: '' },
-        ICT: { marks: '', grade: '' },
-        Mathematics: { marks: '', grade: '' },
-        Science: { marks: '', grade: '' },
-        SST: { marks: '', grade: '' },
-        French: { marks: '', grade: '' },
-        Hindi: { marks: '', grade: '' },
-        Marathi: { marks: '', grade: '' },
+        English: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        ICT: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        Mathematics: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        Science: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        SST: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        French: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        Hindi: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        Marathi: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
       },
       term2: {
-        English: { marks: '', grade: '' },
-        ICT: { marks: '', grade: '' },
-        Mathematics: { marks: '', grade: '' },
-        Science: { marks: '', grade: '' },
-        SST: { marks: '', grade: '' },
-        French: { marks: '', grade: '' },
-        Hindi: { marks: '', grade: '' },
-        Marathi: { marks: '', grade: '' },
+        English: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        ICT: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        Mathematics: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        Science: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        SST: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        French: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        Hindi: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
+        Marathi: { firstUnitTest: '', secondUnitTest: '', finalExam: '', marks: '', grade: '' },
       }
     },
     
@@ -107,22 +107,58 @@ const ReportCardForm = () => {
     return 'U';
   };
   
-  const handleInputChange = (section, field, value, term = null) => {
+  const handleInputChange = (section, field, value, term = null, component = null) => {
     if (section === 'personal') {
       setFormData({ ...formData, [field]: value });
     } else if (section === 'grades') {
-      // For grades, value is the marks
-      const grade = calculateGrade(value);
-      setFormData({
-        ...formData,
-        grades: {
-          ...formData.grades,
-          [term]: {
-            ...formData.grades[term],
-            [field]: { marks: value, grade }
+      if (component) {
+        // For individual components (firstUnitTest, secondUnitTest, finalExam)
+        const updatedSubject = {
+          ...formData.grades[term][field],
+          [component]: value
+        };
+        
+        // Calculate total marks
+        const firstUnitTest = parseInt(component === 'firstUnitTest' ? value : updatedSubject.firstUnitTest || 0, 10);
+        const secondUnitTest = parseInt(component === 'secondUnitTest' ? value : updatedSubject.secondUnitTest || 0, 10);
+        const finalExam = parseInt(component === 'finalExam' ? value : updatedSubject.finalExam || 0, 10);
+        
+        const totalMarks = (isNaN(firstUnitTest) ? 0 : firstUnitTest) + 
+                          (isNaN(secondUnitTest) ? 0 : secondUnitTest) + 
+                          (isNaN(finalExam) ? 0 : finalExam);
+        
+        // Calculate grade based on total marks
+        const grade = calculateGrade(totalMarks);
+        
+        // Update the subject with all values
+        setFormData({
+          ...formData,
+          grades: {
+            ...formData.grades,
+            [term]: {
+              ...formData.grades[term],
+              [field]: { 
+                ...updatedSubject,
+                marks: totalMarks.toString(),
+                grade
+              }
+            }
           }
-        }
-      });
+        });
+      } else {
+        // For backward compatibility with direct marks input
+        const grade = calculateGrade(value);
+        setFormData({
+          ...formData,
+          grades: {
+            ...formData.grades,
+            [term]: {
+              ...formData.grades[term],
+              [field]: { marks: value, grade }
+            }
+          }
+        });
+      }
     } else if (section === 'coScholastic') {
       setFormData({
         ...formData,

@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 const DescriptiveIndicatorsStep = ({ formData, handleInputChange }) => {
   const indicators = [
     { id: 'selfSufficientLearner', name: 'Self sufficient learner' },
@@ -26,6 +28,25 @@ const DescriptiveIndicatorsStep = ({ formData, handleInputChange }) => {
     { value: 'Needs Improvement', label: 'Needs Improvement' },
   ];
 
+  // Set default 'Excellent' value for any empty indicator on initial render
+  useEffect(() => {
+    indicators.forEach((indicator) => {
+      if (!formData.descriptiveIndicators.term1[indicator.id]) {
+        handleInputChange('descriptiveIndicators', indicator.id, 'Excellent', 'term1');
+      }
+      if (!formData.descriptiveIndicators.term2[indicator.id]) {
+        handleInputChange('descriptiveIndicators', indicator.id, 'Excellent', 'term2');
+      }
+    });
+  }, []);
+
+  // Set all indicators to 'Excellent'
+  const setAllToExcellent = (term) => {
+    indicators.forEach((indicator) => {
+      handleInputChange('descriptiveIndicators', indicator.id, 'Excellent', term);
+    });
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">Descriptive Indicators</h2>
@@ -38,7 +59,6 @@ const DescriptiveIndicatorsStep = ({ formData, handleInputChange }) => {
       
       <div className="grid grid-cols-1 gap-y-8">
         <div>
-          <h3 className="text-xl font-medium text-teal-700 mb-4">Term 1</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {indicators.map((indicator) => (
               <div key={`term1-${indicator.id}`}>
@@ -47,11 +67,10 @@ const DescriptiveIndicatorsStep = ({ formData, handleInputChange }) => {
                 </label>
                 <select
                   id={`term1-${indicator.id}`}
-                  value={formData.descriptiveIndicators.term1[indicator.id]}
+                  value={formData.descriptiveIndicators.term1[indicator.id] || 'Excellent'}
                   onChange={(e) => handleInputChange('descriptiveIndicators', indicator.id, e.target.value, 'term1')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
-                  <option value="">Select Remark</option>
                   {remarksOptions.map((remark) => (
                     <option key={`term1-${indicator.id}-${remark.value}`} value={remark.value}>
                       {remark.label}
@@ -64,7 +83,6 @@ const DescriptiveIndicatorsStep = ({ formData, handleInputChange }) => {
         </div>
         
         <div>
-          <h3 className="text-xl font-medium text-teal-700 mb-4">Term 2</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {indicators.map((indicator) => (
               <div key={`term2-${indicator.id}`}>
@@ -73,11 +91,10 @@ const DescriptiveIndicatorsStep = ({ formData, handleInputChange }) => {
                 </label>
                 <select
                   id={`term2-${indicator.id}`}
-                  value={formData.descriptiveIndicators.term2[indicator.id]}
+                  value={formData.descriptiveIndicators.term2[indicator.id] || 'Excellent'}
                   onChange={(e) => handleInputChange('descriptiveIndicators', indicator.id, e.target.value, 'term2')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                 >
-                  <option value="">Select Remark</option>
                   {remarksOptions.map((remark) => (
                     <option key={`term2-${indicator.id}-${remark.value}`} value={remark.value}>
                       {remark.label}

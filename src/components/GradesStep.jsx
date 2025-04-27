@@ -58,6 +58,20 @@ const GradesStep = ({ formData, handleInputChange }) => {
     }
   };
 
+  // Calculate total marks from the three components and update the form
+  const calculateTotalMarks = (term, subjectId) => {
+    const firstTest = parseInt(formData.grades[term][subjectId]?.firstUnitTest || 0, 10);
+    const secondTest = parseInt(formData.grades[term][subjectId]?.secondUnitTest || 0, 10);
+    const finalExam = parseInt(formData.grades[term][subjectId]?.finalExam || 0, 10);
+    
+    // Sum up the marks, handling NaN values
+    const totalMarks = (isNaN(firstTest) ? 0 : firstTest) + 
+                       (isNaN(secondTest) ? 0 : secondTest) + 
+                       (isNaN(finalExam) ? 0 : finalExam);
+    
+    return totalMarks;
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">Academic Marks & Grades</h2>
@@ -82,55 +96,167 @@ const GradesStep = ({ formData, handleInputChange }) => {
       <div className="grid grid-cols-1 gap-y-8">
         <div>
           <h3 className="text-xl font-medium text-teal-700 mb-4">Term 1</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {subjects.map((subject) => (
-              <div key={`term1-${subject.id}`}>
-                <label htmlFor={`term1-${subject.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-                  {subject.name}
-                </label>
-                <div className="flex items-center">
-                  <input
-                    type="number"
-                    id={`term1-${subject.id}`}
-                    value={formData.grades.term1[subject.id]?.marks || ''}
-                    onChange={(e) => handleInputChange('grades', subject.id, e.target.value, 'term1')}
-                    min="0"
-                    max="100"
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    required={subject.isCompulsory}
-                  />
-                  <span className="ml-2 text-gray-600">/ 100</span>
-                  {renderGradeInfo(formData.grades.term1[subject.id]?.marks)}
+          <div className="grid grid-cols-1 gap-4">
+            {subjects.map((subject) => {
+              const totalMarks = calculateTotalMarks('term1', subject.id);
+              
+              return (
+                <div key={`term1-${subject.id}`} className="border p-4 rounded-md">
+                  <h4 className="text-md font-semibold text-gray-700 mb-3">
+                    {subject.name}
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                    <div>
+                      <label htmlFor={`term1-${subject.id}-first`} className="block text-sm font-medium text-gray-700 mb-1">
+                        First Unit Test
+                      </label>
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          id={`term1-${subject.id}-first`}
+                          value={formData.grades.term1[subject.id]?.firstUnitTest || ''}
+                          onChange={(e) => handleInputChange('grades', subject.id, e.target.value, 'term1', 'firstUnitTest')}
+                          min="0"
+                          max="20"
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          required={subject.isCompulsory}
+                        />
+                        <span className="ml-2 text-gray-600">/ 20</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor={`term1-${subject.id}-second`} className="block text-sm font-medium text-gray-700 mb-1">
+                        Second Unit Test
+                      </label>
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          id={`term1-${subject.id}-second`}
+                          value={formData.grades.term1[subject.id]?.secondUnitTest || ''}
+                          onChange={(e) => handleInputChange('grades', subject.id, e.target.value, 'term1', 'secondUnitTest')}
+                          min="0"
+                          max="20"
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          required={subject.isCompulsory}
+                        />
+                        <span className="ml-2 text-gray-600">/ 20</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor={`term1-${subject.id}-final`} className="block text-sm font-medium text-gray-700 mb-1">
+                        Final Exam
+                      </label>
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          id={`term1-${subject.id}-final`}
+                          value={formData.grades.term1[subject.id]?.finalExam || ''}
+                          onChange={(e) => handleInputChange('grades', subject.id, e.target.value, 'term1', 'finalExam')}
+                          min="0"
+                          max="60"
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          required={subject.isCompulsory}
+                        />
+                        <span className="ml-2 text-gray-600">/ 60</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center border-t pt-3 mt-2">
+                    <span className="text-sm font-medium text-gray-700">Total:</span>
+                    <span className="ml-2 font-semibold">{totalMarks}</span>
+                    <span className="text-gray-600 ml-1">/ 100</span>
+                    {renderGradeInfo(totalMarks)}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         
         <div>
           <h3 className="text-xl font-medium text-teal-700 mb-4">Term 2</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {subjects.map((subject) => (
-              <div key={`term2-${subject.id}`}>
-                <label htmlFor={`term2-${subject.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-                  {subject.name}
-                </label>
-                <div className="flex items-center">
-                  <input
-                    type="number"
-                    id={`term2-${subject.id}`}
-                    value={formData.grades.term2[subject.id]?.marks || ''}
-                    onChange={(e) => handleInputChange('grades', subject.id, e.target.value, 'term2')}
-                    min="0"
-                    max="100"
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    required={subject.isCompulsory}
-                  />
-                  <span className="ml-2 text-gray-600">/ 100</span>
-                  {renderGradeInfo(formData.grades.term2[subject.id]?.marks)}
+          <div className="grid grid-cols-1 gap-4">
+            {subjects.map((subject) => {
+              const totalMarks = calculateTotalMarks('term2', subject.id);
+              
+              return (
+                <div key={`term2-${subject.id}`} className="border p-4 rounded-md">
+                  <h4 className="text-md font-semibold text-gray-700 mb-3">
+                    {subject.name}
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                    <div>
+                      <label htmlFor={`term2-${subject.id}-first`} className="block text-sm font-medium text-gray-700 mb-1">
+                        First Unit Test
+                      </label>
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          id={`term2-${subject.id}-first`}
+                          value={formData.grades.term2[subject.id]?.firstUnitTest || ''}
+                          onChange={(e) => handleInputChange('grades', subject.id, e.target.value, 'term2', 'firstUnitTest')}
+                          min="0"
+                          max="20"
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          required={subject.isCompulsory}
+                        />
+                        <span className="ml-2 text-gray-600">/ 20</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor={`term2-${subject.id}-second`} className="block text-sm font-medium text-gray-700 mb-1">
+                        Second Unit Test
+                      </label>
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          id={`term2-${subject.id}-second`}
+                          value={formData.grades.term2[subject.id]?.secondUnitTest || ''}
+                          onChange={(e) => handleInputChange('grades', subject.id, e.target.value, 'term2', 'secondUnitTest')}
+                          min="0"
+                          max="20"
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          required={subject.isCompulsory}
+                        />
+                        <span className="ml-2 text-gray-600">/ 20</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor={`term2-${subject.id}-final`} className="block text-sm font-medium text-gray-700 mb-1">
+                        Final Exam
+                      </label>
+                      <div className="flex items-center">
+                        <input
+                          type="number"
+                          id={`term2-${subject.id}-final`}
+                          value={formData.grades.term2[subject.id]?.finalExam || ''}
+                          onChange={(e) => handleInputChange('grades', subject.id, e.target.value, 'term2', 'finalExam')}
+                          min="0"
+                          max="60"
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          required={subject.isCompulsory}
+                        />
+                        <span className="ml-2 text-gray-600">/ 60</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center border-t pt-3 mt-2">
+                    <span className="text-sm font-medium text-gray-700">Total:</span>
+                    <span className="ml-2 font-semibold">{totalMarks}</span>
+                    <span className="text-gray-600 ml-1">/ 100</span>
+                    {renderGradeInfo(totalMarks)}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
