@@ -75,25 +75,33 @@ export async function generateReportCard(formData) {
     });
 
     // PAGE 3: Academic Grades
-    // Adjusted coordinates for each subject's grades
-    const term1GradeX = 531; // X coordinate for Term 1 grades (shifted 20px left from 551)
-    const term2GradeX = 775; // X coordinate for Term 2 grades
-    const overallGradeX = 1000; // X coordinate for overall grades
+    const term1GradeX = 380; // instead of 531
+    const term2GradeX = 580; // instead of 775
+    const overallGradeX = 770; // instead of 1000    
+
 
     // Y coordinates for each subject (adjusted 50px downwards)
     const gradesY = {
-      English: 570, // Original: 620, adjusted -50px
-      ICT: 513, // Original: 563, adjusted -50px
-      Mathematics: 456, // Original: 506, adjusted -50px
-      Science: 399, // Original: 449, adjusted -50px
-      SST: 342, // Original: 392, adjusted -50px
-      French: 285, // Original: 335, adjusted -50px
-      Hindi: 228, // Original: 278, adjusted -50px
-      Marathi: 171, // Original: 221, adjusted -50px
+      English: 405,
+      ICT: 365,
+      Mathematics: 325,
+      Science: 285,
+      SST: 245,
+      French: 205,
+      Hindi: 165,
+      Marathi: 125,
+      Total: 85
     };
 
+    // Initialize variables to calculate totals
+    let term1TotalMarks = 0;
+    let term2TotalMarks = 0;
+    let term1SubjectCount = 0;
+    let term2SubjectCount = 0;
+    const subjects = Object.keys(gradesY).filter(subject => subject !== 'Total');
+
     // Add grades for each subject
-    Object.keys(gradesY).forEach((subject) => {
+    subjects.forEach((subject) => {
       // Term 1 Grade
       const term1Grade = formData.grades.term1[subject]?.grade || "";
       page3.drawText(term1Grade, {
@@ -113,6 +121,20 @@ export async function generateReportCard(formData) {
         font: helveticaBold,
         color: rgb(0, 0, 0),
       });
+
+      // Add to total marks for term calculations
+      const term1Marks = parseInt(formData.grades.term1[subject]?.marks || 0, 10);
+      const term2Marks = parseInt(formData.grades.term2[subject]?.marks || 0, 10);
+      
+      if (!isNaN(term1Marks)) {
+        term1TotalMarks += term1Marks;
+        term1SubjectCount++;
+      }
+      
+      if (!isNaN(term2Marks)) {
+        term2TotalMarks += term2Marks;
+        term2SubjectCount++;
+      }
 
       // Calculate and add overall grade if both terms have grades
       if (term1Grade && term2Grade) {
@@ -134,24 +156,62 @@ export async function generateReportCard(formData) {
         page3.drawText(overallGrade, {
           x: overallGradeX,
           y: gradesY[subject],
-          size: 12,
+          size: 13,
           font: helveticaBold,
           color: rgb(0, 0, 0),
         });
       }
     });
 
+    // Calculate and add total row
+    const term1Average = term1SubjectCount > 0 ? Math.round(term1TotalMarks / term1SubjectCount) : 0;
+    const term2Average = term2SubjectCount > 0 ? Math.round(term2TotalMarks / term2SubjectCount) : 0;
+    
+    // Add total grade for term 1
+    const term1TotalGrade = calculateGrade(term1Average);
+    page3.drawText(term1TotalGrade, {
+      x: term1GradeX,
+      y: gradesY.Total,
+      size: 12,
+      font: helveticaBold,
+      color: rgb(0, 0, 0),
+    });
+
+    // Add total grade for term 2
+    const term2TotalGrade = calculateGrade(term2Average);
+    page3.drawText(term2TotalGrade, {
+      x: term2GradeX,
+      y: gradesY.Total,
+      size: 12,
+      font: helveticaBold,
+      color: rgb(0, 0, 0),
+    });
+
+    // Calculate and add overall total grade
+    if (term1SubjectCount > 0 && term2SubjectCount > 0) {
+      const overallAverage = Math.round((term1Average + term2Average) / 2);
+      const overallTotalGrade = calculateGrade(overallAverage);
+      
+      page3.drawText(overallTotalGrade, {
+        x: overallGradeX,
+        y: gradesY.Total,
+        size: 13,
+        font: helveticaBold,
+        color: rgb(0, 0, 0),
+      });
+    }
+
     // PAGE 4: Co-Scholastic Assessment
     // Approximate coordinates for the visual arts assessment
-    const coScholasticTerm1X = 709;
-    const coScholasticTerm2X = 1068;
-    const coScholasticY = 636;
+    const coScholasticTerm1X = 490;
+    const coScholasticTerm2X = 750;
+    const coScholasticY = 195;
 
     // Add co-scholastic grades
     page4.drawText(formData.coScholastic.term1.visualArts || "", {
       x: coScholasticTerm1X,
       y: coScholasticY,
-      size: 12,
+      size: 13,
       font: helveticaBold,
       color: rgb(0, 0, 0),
     });
@@ -159,88 +219,85 @@ export async function generateReportCard(formData) {
     page4.drawText(formData.coScholastic.term2.visualArts || "", {
       x: coScholasticTerm2X,
       y: coScholasticY,
-      size: 12,
+      size: 13,
       font: helveticaBold,
       color: rgb(0, 0, 0),
     });
 
-    // PAGE 5: Descriptive Indicators
-    // Approximate coordinates for the indicators
-    const leftColumnIndicators = [
-      "selfSufficientLearner",
-      "strivesForAcademicExcellence",
-      "engagesEffectively",
-      "exhibitsHabitsOfMind",
-      "synthesisesInformation",
-      "demonstratesTeamwork",
-      "showsRespectForFacilitators",
-    ];
+// PAGE 5: Descriptive Indicators
 
-    const rightColumnIndicators = [
-      "exhibitsAttentionAndConcentration",
-      "consistentlySubmitsAssignments",
-      "obedientAndDiligent",
-      "academicIntegrityAndSelfReliance",
-      "engagesInDiscussion",
-      "practicesNetiquette",
-      "exhibitsLeadershipSkills",
-    ];
+const leftColumnIndicators = [
+  "selfSufficientLearner",
+  "strivesForAcademicExcellence",
+  "engagesEffectively",
+  "exhibitsHabitsOfMind",
+  "synthesisesInformation",
+  "demonstratesTeamwork",
+  "showsRespectForFacilitators",
+];
 
-    // Position for the first indicator in each column
-    const leftColumnTerm1X = 462;
-    const leftColumnTerm2X = 527;
-    const rightColumnTerm1X = 1060;
-    const rightColumnTerm2X = 1125;
+const rightColumnIndicators = [
+  "exhibitsAttentionAndConcentration",
+  "consistentlySubmitsAssignments",
+  "obedientAndDiligent",
+  "academicIntegrityAndSelfReliance",
+  "engagesInDiscussion",
+  "practicesNetiquette",
+  "exhibitsLeadershipSkills",
+];
 
-    // Y-coordinates for each row (approximate)
-    const indicatorsStartY = 630;
-    const indicatorRowHeight = 56;
+// X coordinates
+const leftColumnTerm1X = 300;
+const leftColumnTerm2X = 383;
+const rightColumnTerm1X = 715;
+const rightColumnTerm2X = 805;
 
-    // Add left column indicators
-    leftColumnIndicators.forEach((indicator, index) => {
-      const y = indicatorsStartY - index * indicatorRowHeight;
+// Y coordinates for each left column indicator
+const leftYCoordinates = [340, 295, 245, 195, 146, 100, 53];
+// Y coordinates for each right column indicator
+const rightYCoordinates = [340, 295, 245, 195, 146, 100, 53];
 
-      // Term 1
-      page5.drawText(formData.descriptiveIndicators.term1[indicator] || "", {
-        x: leftColumnTerm1X,
-        y,
-        size: 10,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
+// Fill left column
+leftColumnIndicators.forEach((_, index) => {
+  const y = leftYCoordinates[index];
 
-      // Term 2
-      page5.drawText(formData.descriptiveIndicators.term2[indicator] || "", {
-        x: leftColumnTerm2X,
-        y,
-        size: 10,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
-    });
+  page5.drawText("Excellent", {
+    x: leftColumnTerm1X,
+    y,
+    size: 13,
+    font: helveticaBold,
+    color: rgb(0, 0, 0),
+  });
 
-    // Add right column indicators
-    rightColumnIndicators.forEach((indicator, index) => {
-      const y = indicatorsStartY - index * indicatorRowHeight;
+  page5.drawText("Excellent", {
+    x: leftColumnTerm2X,
+    y,
+    size: 13,
+    font: helveticaBold,
+    color: rgb(0, 0, 0),
+  });
+});
 
-      // Term 1
-      page5.drawText(formData.descriptiveIndicators.term1[indicator] || "", {
-        x: rightColumnTerm1X,
-        y,
-        size: 10,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
+// Fill right column
+rightColumnIndicators.forEach((_, index) => {
+  const y = rightYCoordinates[index];
 
-      // Term 2
-      page5.drawText(formData.descriptiveIndicators.term2[indicator] || "", {
-        x: rightColumnTerm2X,
-        y,
-        size: 10,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
-    });
+  page5.drawText("Excellent", {
+    x: rightColumnTerm1X,
+    y,
+    size: 13,
+    font: helveticaBold,
+    color: rgb(0, 0, 0),
+  });
+
+  page5.drawText("Excellent", {
+    x: rightColumnTerm2X,
+    y,
+    size: 13,
+    font: helveticaBold,
+    color: rgb(0, 0, 0),
+  });
+});
 
     // Save the PDF
     const pdfBytes = await pdfDoc.save();
