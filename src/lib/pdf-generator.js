@@ -3,6 +3,12 @@ import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fs from "fs/promises";
 import path from "path";
 
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function (txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
+
 export async function generateReportCard(formData) {
   try {
     // Helper function to calculate grade from marks
@@ -44,7 +50,7 @@ export async function generateReportCard(formData) {
 
     // PAGE 1: Add student information
     // These coordinates and dimensions are estimated and may need adjustment based on the actual template
-    page1.drawText(formData.studentName, {
+    page1.drawText(toTitleCase(formData.studentName), {
       x: 500,
       y: 220,
       size: 20,
